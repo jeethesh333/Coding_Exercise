@@ -83,7 +83,7 @@ def apply_conversions(df):
             df[col] = df[col].apply(convert_oid)
     
     # Define a list of common date column names
-    date_columns = ['createDate', 'lastLogin', 'purchaseDate', 'dateScanned', 'finishedDate', 'modifyDate', 'pointsAwardedDate']
+    date_columns = ['createDate', 'createDate', 'lastLogin', 'purchaseDate', 'dateScanned', 'finishedDate', 'modifyDate', 'pointsAwardedDate']
     for col in date_columns:
         if col in df.columns:
             df[col] = df[col].apply(convert_date)
