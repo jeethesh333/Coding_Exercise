@@ -1,6 +1,5 @@
-first_question
 
-This structure follows a star schema:
+##This structure follows a star schema:
 
 Fact Table: receipts (contains purchase transactions)
 Dimension Tables: users, brands, cpg, rewardsReceiptItemList
