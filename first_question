@@ -50,8 +50,7 @@ Dimension Tables: users, brands, cpg, rewardsReceiptItemList
 
 Here is the relational diagram representing how the data is structured in the data warehouse. The diagram illustrates the relationships between the key tables (users, receipts, rewardsReceiptItemList, brands, and cpg).
 
-<img src="images/IMG_6590.jpeg">
-
+![img1](images/IMG_6590.jpeg)
 
 Here is the ER diagram showing:
 Entities (Tables) with attributes
