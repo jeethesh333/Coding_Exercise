@@ -1,3 +1,3 @@
 # Coding_Exercise
 
-![My Image](IMG_6590.heic)
+![My Image](IMG_6591.png)
