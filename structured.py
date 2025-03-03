@@ -109,7 +109,35 @@ rewardsReceiptItemList_df = pd.json_normalize(exploded_rewards)
 # Drop the 'rewardsReceiptItemList' column from receipts_df.
 receipts_df = receipts_df.drop('rewardsReceiptItemList', axis=1)
 
+# Add a new auto-incremented `_id` column
+rewardsReceiptItemList_df.insert(0, "_id", range(1, len(rewardsReceiptItemList_df) + 1))
+
+
+
+# # Convert BOOLEAN columns (True/False → 1/0)
+# boolean_columns = ['needsFetchReview', 'preventTargetGapPoints', 'userFlaggedNewItem',
+#                    'competitiveProduct', 'deleted', 'promoApplied']
+
+# for col in boolean_columns:
+#     rewardsReceiptItemList_df[col] = rewardsReceiptItemList_df[col].astype(bool).astype(int)  # Convert True/False to 1/0
+
+# # Convert INTEGER columns (remove decimals)
+# integer_columns = ['partnerItemId', 'quantityPurchased', 'pointsEarned']
+# for col in integer_columns:
+#     rewardsReceiptItemList_df[col] = pd.to_numeric(rewardsReceiptItemList_df[col], errors='coerce').fillna(0).astype(int)
+
+# # Convert TEXT columns (float → string)
+# text_columns = ['itemNumber']
+# for col in text_columns:
+#     rewardsReceiptItemList_df[col] = rewardsReceiptItemList_df[col].astype(str)
+
+
+
+
+
 users_df = load_gzipped_json('data/input_data/users.json.gz')
+users_df = users_df.drop_duplicates(subset=['_id'])
+
 
 brands_df = load_gzipped_json('data/input_data/brands.json.gz')
 
@@ -125,6 +153,10 @@ if 'cpg' in brands_df.columns:
 else:
     cpg_df = pd.DataFrame()
 
+# Remove duplicate rows in cpg
+cpg_df = cpg_df.drop_duplicates(subset=['cpg_id'])
+
+
 #create a dictionary of all dataframes
 dataframes = {'receipts':receipts_df, 'users':users_df, 'brands':brands_df, 'rewardsReceiptItemList': rewardsReceiptItemList_df, 'cpg': cpg_df}
 
@@ -137,3 +169,4 @@ for name, df in dataframes.items():
 #convert the data to csv format
 for name, df in dataframes.items():
     df.to_csv(f"data/output_data/{name}.csv",index=False)
+
