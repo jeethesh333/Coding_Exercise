@@ -1,4 +1,4 @@
-in the initial data provided, there are three files users, brands, receipts. In receipts file there is another table nested
+In the initial data provided, there are three files users, brands, receipts. In receipts file there is another table nested
 which is rewardsReceiptItemList. In brands table there is another table nested which is cpg. So, instead of three tables now it is five tables.
 
 Assumptions: 
