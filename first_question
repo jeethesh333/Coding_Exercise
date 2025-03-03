@@ -1,15 +1,8 @@
-
-##This structure follows a star schema:
-
-Fact Table: receipts (contains purchase transactions)
-Dimension Tables: users, brands, cpg, rewardsReceiptItemList
-
-Here is the relational diagram representing how the data is structured in the data warehouse. The diagram illustrates the relationships between the key tables (users, receipts, rewardsReceiptItemList, brands, and cpg).
-
-This structure follows a star schema where receipts is the central fact table, and the other tables act as dimension tables, optimizing for analytical queries.
+in the initial data provided, there are three files users, brands, receipts. In receipts file there is another table nested
+which is rewardsReceiptItemList. In brands table there is another table nested which is cpg. So, instead of three tables now it is five tables.
 
 Assumptions: 
-1.For some tables, as there are more columns I am only writing certain columns to make it easier.
+1.For some tables, as there are more columns, I am only writing certain columns to make it easier.
 2.since cpg table doesn't have direct relation with other tables. I am creating cpg_id column in brands table as a refrence to cpg table.
 
 Tables and Relationships:
@@ -48,4 +41,21 @@ brandCode
 CPG Table (cpg)
 cpg_id (Primary Key)
 cpg_ref
+
+
+This structure follows a star schema where receipts is the central fact table, and the other tables act as dimension tables, optimizing for analytical queries.
+
+Fact Table: receipts (contains purchase transactions)
+Dimension Tables: users, brands, cpg, rewardsReceiptItemList
+
+Here is the relational diagram representing how the data is structured in the data warehouse. The diagram illustrates the relationships between the key tables (users, receipts, rewardsReceiptItemList, brands, and cpg).
+
+<img src="images/IMG_6590.jpeg">
+
+
+Here is the ER diagram showing:
+Entities (Tables) with attributes
+Primary Keys (PK) & Foreign Keys (FK) 
+Relationships with cardinality (1:N, N:1)
+
 
