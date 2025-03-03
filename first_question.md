@@ -2,7 +2,7 @@ In the initial data provided, there are three files users, brands, receipts. In 
 which is rewardsReceiptItemList. In brands table there is another table nested which is cpg. So, instead of three tables now it is five tables.
 
 Assumptions: 
-1.For some tables, as there are more columns, I am only writing certain columns to make it easier.
+1.For some tables, as there are more columns, I am only writing certain columns to make it easier.  
 2.since cpg table doesn't have direct relation with other tables. I am creating cpg_id column in brands table as a refrence to cpg table.
 
 Tables and Relationships:
