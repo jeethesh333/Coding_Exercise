@@ -67,7 +67,6 @@
 --     priceAfterCoupon REAL,
 --     metabriteCampaignId TEXT,
 --     receiptId TEXT,
---     FOREIGN KEY(userFlaggedBarcode) REFERENCES brands(barcode),
 --     FOREIGN KEY(receiptId) REFERENCES receipts(_id)
 -- );
 
