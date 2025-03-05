@@ -5,7 +5,7 @@
 
 -- CREATE TABLE brands (
 --     _id TEXT PRIMARY KEY,
---     barcode TEXT,
+--     barcode REAL,
 --     category TEXT,
 --     categoryCode TEXT,
 --     name TEXT,
@@ -32,7 +32,6 @@
 -- );
 
 -- CREATE TABLE rewardsReceiptItemList (
---     _id INTEGER PRIMARY KEY AUTOINCREMENT,
 --     barcode TEXT,
 --     description TEXT,
 --     finalPrice REAL,
@@ -67,7 +66,9 @@
 --     deleted TEXT,
 --     priceAfterCoupon REAL,
 --     metabriteCampaignId TEXT,
---     FOREIGN KEY(barcode) REFERENCES brands(barcode)
+--     receiptId TEXT,
+--     FOREIGN KEY(userFlaggedBarcode) REFERENCES brands(barcode),
+--     FOREIGN KEY(receiptId) REFERENCES receipts(_id)
 -- );
 
 -- CREATE TABLE users (
@@ -88,28 +89,35 @@
 -- .import --skip 1 data/output_data/brands.csv brands
 -- .import --skip 1 data/output_data/rewardsReceiptItemList.csv rewardsReceiptItemList
 
-
-
-
-
-
-
-
-
-
-
 .headers ON
+-- PRAGMA table_info(rewardsReceiptItemList);
 
 
 
 
-SELECT 
-    rewardsReceiptStatus,
-    SUM(purchasedItemCount) AS total_items
+
+SELECT rewardsReceiptStatus
 FROM receipts
 WHERE rewardsReceiptStatus IN ('FINISHED', 'REJECTED')
-GROUP BY rewardsReceiptStatus;
+GROUP BY rewardsReceiptStatus
+ORDER BY SUM(purchasedItemCount) DESC
+LIMIT 1;
 
 
 
--- PRAGMA table_info(rewardsReceiptItemList);
+-- SELECT rewardsReceiptStatus
+-- FROM receipts  
+-- WHERE rewardsReceiptStatus IN ('FINISHED', 'REJECTED')  
+-- GROUP BY rewardsReceiptStatus  
+-- ORDER BY AVG(totalSpent) DESC
+-- LIMIT 1;
+
+
+
+
+
+
+
+
+
+

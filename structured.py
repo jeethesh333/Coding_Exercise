@@ -77,7 +77,7 @@ def apply_conversions(df):
     and applies the corresponding conversion functions.
     """
     # Convert ObjectID columns if they exist.
-    oid_columns = ['_id', 'userId', 'brand_id']
+    oid_columns = ['_id', 'userId', 'brand_id', 'receiptId']
     for col in oid_columns:
         if col in df.columns:
             df[col] = df[col].apply(convert_oid)
@@ -102,16 +102,22 @@ file_paths = {
 }
 
 receipts_df = load_gzipped_json('data/input_data/receipts.json.gz')
-# Explode the rewardsReceiptItemList column 
-exploded_rewards = receipts_df['rewardsReceiptItemList'].explode()
-# Normalize the dictionaries in the exploded series to create a proper DataFrame
-rewardsReceiptItemList_df = pd.json_normalize(exploded_rewards)
+
+
+# Filter rows that contain actual lists
+# receipts_df = receipts_df[receipts_df['rewardsReceiptItemList'].apply(lambda x: isinstance(x, list))]
+
+    # ✅ Step 2: Explode rewardsReceiptItemList (convert lists into separate rows)
+exploded_df = receipts_df.explode('rewardsReceiptItemList')
+
+    # ✅ Step 3: Normalize (flatten) the dictionary data into structured columns
+rewardsReceiptItemList_df = pd.json_normalize(exploded_df['rewardsReceiptItemList'])
+
+    # ✅ Step 4: Add `receiptId` from `receipts_df`
+rewardsReceiptItemList_df['receiptId'] = exploded_df['_id'].values
+
 # Drop the 'rewardsReceiptItemList' column from receipts_df.
-receipts_df = receipts_df.drop('rewardsReceiptItemList', axis=1)
-
-# Add a new auto-incremented `_id` column
-rewardsReceiptItemList_df.insert(0, "_id", range(1, len(rewardsReceiptItemList_df) + 1))
-
+receipts_df.drop(columns=['rewardsReceiptItemList'], inplace=True)
 
 
 # # Convert BOOLEAN columns (True/False → 1/0)
