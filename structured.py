@@ -4,6 +4,7 @@ import json
 import pandas as pd
 import datetime
 
+
 # extracting the data
 def load_gzipped_json(file_path):
     """
@@ -103,9 +104,7 @@ file_paths = {
 
 receipts_df = load_gzipped_json('data/input_data/receipts.json.gz')
 
-
-# Filter rows that contain actual lists
-# receipts_df = receipts_df[receipts_df['rewardsReceiptItemList'].apply(lambda x: isinstance(x, list))]
+brands_df = load_gzipped_json('data/input_data/brands.json.gz')
 
     # ✅ Step 2: Explode rewardsReceiptItemList (convert lists into separate rows)
 exploded_df = receipts_df.explode('rewardsReceiptItemList')
@@ -119,23 +118,83 @@ rewardsReceiptItemList_df['receiptId'] = exploded_df['_id'].values
 # Drop the 'rewardsReceiptItemList' column from receipts_df.
 receipts_df.drop(columns=['rewardsReceiptItemList'], inplace=True)
 
+import uuid
 
-# # Convert BOOLEAN columns (True/False → 1/0)
-# boolean_columns = ['needsFetchReview', 'preventTargetGapPoints', 'userFlaggedNewItem',
-#                    'competitiveProduct', 'deleted', 'promoApplied']
+rewardsReceiptItemList_df['item_id'] = [str(uuid.uuid4()) for _ in range(len(rewardsReceiptItemList_df))]  # Unique ID for each row
 
-# for col in boolean_columns:
-#     rewardsReceiptItemList_df[col] = rewardsReceiptItemList_df[col].astype(bool).astype(int)  # Convert True/False to 1/0
+cols = ['item_id'] + [col for col in rewardsReceiptItemList_df.columns if col != 'item_id']
+rewardsReceiptItemList_df = rewardsReceiptItemList_df[cols]
 
-# # Convert INTEGER columns (remove decimals)
-# integer_columns = ['partnerItemId', 'quantityPurchased', 'pointsEarned']
-# for col in integer_columns:
-#     rewardsReceiptItemList_df[col] = pd.to_numeric(rewardsReceiptItemList_df[col], errors='coerce').fillna(0).astype(int)
+import pandas as pd
+import spacy
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from collections import Counter
+from fuzzywuzzy import process
+import nltk
+from nltk.corpus import stopwords
 
-# # Convert TEXT columns (float → string)
-# text_columns = ['itemNumber']
-# for col in text_columns:
-#     rewardsReceiptItemList_df[col] = rewardsReceiptItemList_df[col].astype(str)
+# Download stopwords if not already available
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
+# Load SpaCy NLP model
+nlp = spacy.load("en_core_web_sm")
+
+
+
+# Step 1: Use TF-IDF to detect frequent non-brand words
+vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = vectorizer.fit_transform(rewardsReceiptItemList_df['description'].dropna())
+feature_names = vectorizer.get_feature_names_out()
+
+known_brands = brands_df['brandCode'].dropna().unique().tolist()
+# Find top frequent words across descriptions
+word_freq = Counter(" ".join(rewardsReceiptItemList_df['description'].dropna()).split())
+common_words = [word.upper() for word, count in word_freq.items() if count > 1]
+
+# Combine TF-IDF detected common words + English stopwords
+excluded_words = set(common_words).union(stop_words)
+
+# Step 2: Function to extract brand names dynamically
+from fuzzywuzzy import process
+
+
+def extract_brand(description):
+    if pd.isna(description) or description.strip() == "ITEM NOT FOUND":
+        return None  # Ignore 'ITEM NOT FOUND' and empty values
+
+    doc = nlp(description.title())  # Capitalize first letters for better recognition
+    possible_brands = []
+
+    # Extract proper nouns (brands) using NLP Named Entity Recognition (NER)
+    for token in doc:
+        if token.ent_type_ in {"ORG", "PRODUCT"} or token.pos_ in {"PROPN", "NOUN"}:
+            possible_brands.append(token.text)
+
+    # Select the best candidate for the brand
+    brand_name = " ".join(possible_brands[:2]) if len(possible_brands) > 1 else possible_brands[0] if possible_brands else description.split()[0]
+
+    # Apply fuzzy matching to standardize brand names
+    match_result = process.extractOne(brand_name.upper(), known_brands)
+
+    if match_result:  # Check if extractOne() returned a valid match
+        best_match, score = match_result
+        if score > 85:  # If the match is strong, return the standardized brand name
+            return best_match
+    
+    return brand_name  # Otherwise, return the extracted brand name
+
+
+
+
+
+# Step 3: Fill missing brandcode values dynamically
+rewardsReceiptItemList_df['brandCode'] = rewardsReceiptItemList_df['description'].apply(extract_brand)
+
+
+
+
 
 
 
@@ -145,7 +204,6 @@ users_df = load_gzipped_json('data/input_data/users.json.gz')
 users_df = users_df.drop_duplicates(subset=['_id'])
 
 
-brands_df = load_gzipped_json('data/input_data/brands.json.gz')
 
 if 'cpg' in brands_df.columns:
     # Convert the cpg field to a simplified dict using convert_cpg
