@@ -123,3 +123,6 @@ Primary Keys (PK) & Foreign Keys (FK)
 Relationships with cardinality (1:N, N:1)
 
 ![img1](images/ER_diagram.jpeg)
+
+[next question](https://github.com/jeethesh333/Coding_Exercise/blob/main/second_question.md)
+
