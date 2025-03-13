@@ -3,6 +3,16 @@ import gzip
 import json
 import pandas as pd
 import datetime
+import spacy
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
+from collections import Counter
+from fuzzywuzzy import process
+import nltk
+from nltk.corpus import stopwords
+import uuid
+from fuzzywuzzy import process
+
 
 
 # extracting the data
@@ -106,33 +116,24 @@ receipts_df = load_gzipped_json('data/input_data/receipts.json.gz')
 
 brands_df = load_gzipped_json('data/input_data/brands.json.gz')
 
-    # ✅ Step 2: Explode rewardsReceiptItemList (convert lists into separate rows)
+#Explode rewardsReceiptItemList (convert lists into separate rows)
 exploded_df = receipts_df.explode('rewardsReceiptItemList')
 
-    # ✅ Step 3: Normalize (flatten) the dictionary data into structured columns
+#Normalize the dictionary data into structured columns
 rewardsReceiptItemList_df = pd.json_normalize(exploded_df['rewardsReceiptItemList'])
 
-    # ✅ Step 4: Add `receiptId` from `receipts_df`
+#Add `receiptId` from `receipts_df`
 rewardsReceiptItemList_df['receiptId'] = exploded_df['_id'].values
 
 # Drop the 'rewardsReceiptItemList' column from receipts_df.
 receipts_df.drop(columns=['rewardsReceiptItemList'], inplace=True)
 
-import uuid
-
-rewardsReceiptItemList_df['item_id'] = [str(uuid.uuid4()) for _ in range(len(rewardsReceiptItemList_df))]  # Unique ID for each row
+# Unique ID for each row
+rewardsReceiptItemList_df['item_id'] = [str(uuid.uuid4()) for _ in range(len(rewardsReceiptItemList_df))]  
 
 cols = ['item_id'] + [col for col in rewardsReceiptItemList_df.columns if col != 'item_id']
 rewardsReceiptItemList_df = rewardsReceiptItemList_df[cols]
 
-import pandas as pd
-import spacy
-import re
-from sklearn.feature_extraction.text import TfidfVectorizer
-from collections import Counter
-from fuzzywuzzy import process
-import nltk
-from nltk.corpus import stopwords
 
 # Download stopwords if not already available
 nltk.download('stopwords')
@@ -141,9 +142,7 @@ stop_words = set(stopwords.words('english'))
 # Load SpaCy NLP model
 nlp = spacy.load("en_core_web_sm")
 
-
-
-# Step 1: Use TF-IDF to detect frequent non-brand words
+#Use TF-IDF to detect frequent non-brand words
 vectorizer = TfidfVectorizer(stop_words='english')
 tfidf_matrix = vectorizer.fit_transform(rewardsReceiptItemList_df['description'].dropna())
 feature_names = vectorizer.get_feature_names_out()
@@ -156,10 +155,7 @@ common_words = [word.upper() for word, count in word_freq.items() if count > 1]
 # Combine TF-IDF detected common words + English stopwords
 excluded_words = set(common_words).union(stop_words)
 
-# Step 2: Function to extract brand names dynamically
-from fuzzywuzzy import process
-
-
+#Function to extract brand names dynamically
 def extract_brand(description):
     if pd.isna(description) or description.strip() == "ITEM NOT FOUND":
         return None  # Ignore 'ITEM NOT FOUND' and empty values
@@ -185,24 +181,13 @@ def extract_brand(description):
     
     return brand_name  # Otherwise, return the extracted brand name
 
-
-
-
-
-# Step 3: Fill missing brandcode values dynamically
+#Fill missing brandcode values dynamically
 rewardsReceiptItemList_df['brandCode'] = rewardsReceiptItemList_df['description'].apply(extract_brand)
 
 
-
-
-
-
-
-
-
 users_df = load_gzipped_json('data/input_data/users.json.gz')
+#drop duplicates as _id is PK for users
 users_df = users_df.drop_duplicates(subset=['_id'])
-
 
 
 if 'cpg' in brands_df.columns:
@@ -229,7 +214,7 @@ dataframes = {'receipts':receipts_df, 'users':users_df, 'brands':brands_df, 'rew
 for name, df in dataframes.items():
     dataframes[name] = apply_conversions(df)
 
-#loading the data
+#load the data
 #convert the data to csv format
 for name, df in dataframes.items():
     df.to_csv(f"data/output_data/{name}.csv",index=False)
