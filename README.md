@@ -54,9 +54,9 @@ I reviewed the provided JSON files (`receipts.json.gz`, `users.json.gz`, `brands
 
 ## Part 2: SQL Queries for Business Questions
 
-I chose two questions from the list and wrote SQLite queries against my star schema. See [queries.sql](https://github.com/jeethesh333/Coding_Exercise/blob/main/queries.sql) and [second_question.md](https://github.com/jeethesh333/Coding_Exercise/blob/main/second_question.md) for full details.
+I chose three questions from the list and wrote SQLite queries against my star schema. See [queries.sql](https://github.com/jeethesh333/Coding_Exercise/blob/main/queries.sql) and [second_question.md](https://github.com/jeethesh333/Coding_Exercise/blob/main/second_question.md) for full details.
 
-I answered 3rd and 4th question.
+I answered questions(1,3,& 4).
 
 ---
 
